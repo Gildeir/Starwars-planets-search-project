@@ -2,6 +2,20 @@
   text-align: center;
 }
 
+.header-table {
+  background-color: #ccc;
+}
+
+.header-table th {
+  padding: 0.5rem;
+}
+
+.tbody, td {
+  padding: 0.5rem;
+  text-align: center;
+
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;

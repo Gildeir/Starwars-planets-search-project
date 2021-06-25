@@ -1,14 +1,45 @@
-import React, { createContext } from 'react';
-
-const MyContext = createContext(defaultValue);
+import React, { useEffect, useContext } from 'react';
+import PlanetContext from '../context/PlanetContext';
+import HeaderTable from './HeaderTable';
 
 function Table() {
+  const { data, setData } = useContext(PlanetContext);
+
+  useEffect(() => {
+    const getPlanet = async () => {
+      const request = await fetch('https://swapi-trybe.herokuapp.com/api/planets/');
+      const response = await request.json();
+      const result = response.results;
+      result.forEach((element) => delete element.residents);
+      console.log(result);
+      setData(result);
+    };
+    getPlanet();
+  }, [setData]);
+
   return (
-    <MyContext.Provider value={ data }>
-      <div>
-        ret
-      </div>
-    </MyContext.Provider>
+    <div>
+      <HeaderTable />
+      <tbody>
+        {data.map((items, index) => (
+          <tr key={ index }>
+            <td>{Object.values(items.name)}</td>
+            <td>{Object.values(items.rotation_period)}</td>
+            <td>{Object.values(items.orbital_period)}</td>
+            <td>{Object.values(items.diameter)}</td>
+            <td>{Object.values(items.climate)}</td>
+            <td>{Object.values(items.gravity)}</td>
+            <td>{Object.values(items.terrain)}</td>
+            <td>{Object.values(items.surface_water)}</td>
+            <td>{Object.values(items.population)}</td>
+            <td>{Object.values(items.films)}</td>
+            <td>{Object.values(items.created)}</td>
+            <td>{Object.values(items.edited)}</td>
+            <td>{Object.values(items.url)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </div>
   );
 }
 
