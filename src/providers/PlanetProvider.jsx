@@ -4,7 +4,9 @@ import PlanetContext from '../context/PlanetContext';
 
 function PlanetProvider({ children }) {
   const [data, setData] = useState([]);
-  const context = { data, setData };
+  const [filters, setFilters] = useState([]);
+
+  const context = { data, setData, filters, setFilters };
   return (
     <PlanetContext.Provider value={ context }>
       {children}
