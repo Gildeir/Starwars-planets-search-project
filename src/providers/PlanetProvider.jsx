@@ -3,16 +3,22 @@ import PropTypes from 'prop-types';
 import PlanetContext from '../context/PlanetContext';
 
 const initialState = {
-  filterByName: { name: '' },
-  filterByNumericValues: [],
+  filterByName: {
+    name: '',
+  },
+  filterByNumericValues: [{
+    column: 'population',
+    comparison: 'maior que',
+    value: '0',
+  }],
 };
 
 function PlanetProvider({ children }) {
   const [data, setData] = useState([]);
-  const [filters, setFilters] = useState(initialState);
   const [column, setColumn] = useState('');
   const [comparison, setComparison] = useState('');
   const [value, setValue] = useState('');
+  const [filters, setFilters] = useState(initialState);
 
   const context = {
     data,

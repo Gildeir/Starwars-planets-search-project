@@ -8,13 +8,16 @@ function Table() {
     setData,
     setFilters,
     filters,
-    column,
-    setColumn,
-    comparison,
-    setComparison,
-    value,
-    setValue } = useContext(PlanetContext);
+  } = useContext(PlanetContext);
 
+  console.log(data);
+
+  function handleSearch({ target }) {
+    setFilters({
+      ...filters,
+      filterByName: { name: target.value.toLowerCase() },
+    });
+  }
   useEffect(() => {
     const getPlanet = async () => {
       const request = await fetch('https://swapi-trybe.herokuapp.com/api/planets/');
@@ -26,15 +29,87 @@ function Table() {
     getPlanet();
   }, [setData]);
 
-  function handleSearch({ target }) {
+  const { column, comparison, value } = filters.filterByNumericValues[0];
+
+  function filterData({ target }) {
+    let newColumn = filters.filterByNumericValues[0].column;
+    let newComparison = filters.filterByNumericValues[0].comparison;
+    let newValue = filters.filterByNumericValues[0].value;
+    switch (target.name) {
+    case 'column':
+      newColumn = target.value;
+      break;
+    case 'comparison':
+      newComparison = target.value;
+      break;
+    default:
+      newValue = target.value;
+    }
     setFilters({
       ...filters,
-      filterByName: { name: target.value.toLowerCase() },
+      filterByNumericValues: [
+        {
+          column: newColumn,
+          comparison: newComparison,
+          value: newValue,
+        },
+
+      ],
     });
+    console.log(target.name);
   }
 
-  function inputFunc() {
+  function filteredData() {
+    let newData = data;
+
+    switch (comparison) {
+    case 'maior que':
+      newData = data.filter((planet) => (
+        parseInt(planet[column], 10)
+       > parseInt(value, 10) && planet.name.includes(filters.filterByName.name)
+      ));
+      break;
+    case 'igual a':
+      newData = data.filter((planet) => (
+        parseInt(planet[column], 10) === parseInt(value, 10)
+       && planet.name.includes(filters.filterByName.name)
+      ));
+      break;
+    default:
+      console.log(filters.filterByName);
+      newData = data.filter((planet) => (
+        parseInt(planet[column], 10)
+       < parseInt(value, 10) && planet.name.includes(filters.filterByName.name)
+      ));
+      break;
+    }
+    setData(newData);
+  }
+
+  function renderTable() {
+    if (data.length === 0) {
+      return data;
+    }
     return (
+      <tbody>
+        {data.filter((namesOfPlanets) => namesOfPlanets
+          .name.toLowerCase().includes(filters.filterByName.name))
+          .map((items, index) => (
+            <tr key={ index }>
+              {Object.values(items)
+                .map((planets) => (
+                  <td key={ planets }>
+                    { planets }
+                  </td>))}
+            </tr>
+          ))}
+      </tbody>
+    );
+  }
+
+  return (
+    <div>
+      <HeaderTable />
       <label htmlFor="filter">
         <input
           data-testid="name-filter"
@@ -44,110 +119,47 @@ function Table() {
           id="filter"
         />
       </label>
-    );
-  }
-
-  function handleClick() {
-    setFilters({
-      ...filters,
-      filterByNumericValues: [
-        ...filters.filterByNumericValues,
-        {
-          column,
-          comparison,
-          value,
-        },
-      ],
-    });
-  }
-
-  function optionsColumnFilter() {
-    const options = ['population', 'orbital_period', 'diameter',
-      'rotation_period', 'surface_water'];
-
-    return (options.map((item, index) => (
-      <option
-        key={ index }
-        id={ item }
-        name="column"
-      >
-        {item}
-      </option>
-    )));
-  }
-
-  function optionComparisonFilter() {
-    const options = ['maior que', 'menor que', 'igual a'];
-    return (options.map((method) => (
-      <option
-        key={ method }
-        id="comparison"
-        name="comparison"
-        value={ method }
-      >
-        {method}
-      </option>
-    )));
-  }
-
-  function numericFilters() {
-    return (
       <section className="numericFilters">
         <select
           data-testid="column-filter"
-          onChange={ (e) => setColumn(e.target.value) }
+          name="column"
+          onChange={ filterData }
         >
-          {optionsColumnFilter()}
+          <option value="population">population</option>
+          <option value="orbital_period">orbital_period</option>
+          <option value="diameter">diameter</option>
+          <option value="rotation_period">rotation_period</option>
+          <option value="surface_water">surface_water</option>
         </select>
         <select
           data-testid="comparison-filter"
-          onChange={ (e) => setComparison(e.target.value) }
+          name="comparison"
+          onChange={ filterData }
         >
-          {optionComparisonFilter()}
+          <option value="maior que">maior que</option>
+          <option value="igual a">igual a</option>
+          <option value="menor que">menor que</option>
         </select>
-        <input
-          type="number"
-          data-testid="value-filter"
-          name="value"
-          onChange={ (e) => setValue(e.target.value) }
-        />
+        <label htmlFor="number">
+          valor:
+          <input
+            data-testid="value-filter"
+            type="number"
+            name="value"
+            id="number"
+            min="0"
+            onChange={ filterData }
+          />
+        </label>
         <button
           data-testid="button-filter"
           type="button"
-          onClick={ handleClick }
+          onClick={ filteredData }
         >
           Filtrar
 
         </button>
       </section>
-
-    );
-  }
-
-  function renderTable() {
-    if (data.length === 0) {
-      return data;
-    } return (
-      <tbody>
-        {data.filter((namesOfPlanets) => namesOfPlanets
-          .name.toLowerCase().includes(filters.filterByName.name))
-          .map((items, index) => (
-            <tr key={ index }>
-              {Object.values(items)
-                .map((planets) => (
-                  <td key={ value }>
-                    { planets }
-                  </td>))}
-            </tr>
-          ))}
-      </tbody>);
-  }
-
-  return (
-    <div>
-      <HeaderTable />
-      {inputFunc()}
-      {numericFilters()}
       {renderTable()}
     </div>
   );
