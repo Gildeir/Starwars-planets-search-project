@@ -1,6 +1,7 @@
 import React, { useEffect, useContext } from 'react';
 import PlanetContext from '../context/PlanetContext';
 import HeaderTable from './HeaderTable';
+// import FilterValues from './FilterValues';
 
 function Table() {
   const {
@@ -8,12 +9,16 @@ function Table() {
     setData,
     setFilters,
     filters,
-    column,
-    setColumn,
-    comparison,
-    setComparison,
-    value,
-    setValue } = useContext(PlanetContext);
+    filtersControl,
+    dataFilter,
+    setDataFilter,
+  } = useContext(PlanetContext);
+  function handleSearch({ target }) {
+    setFilters({
+      ...filters,
+      filterByName: { name: target.value.toLowerCase() },
+    });
+  }
 
   useEffect(() => {
     const getPlanet = async () => {
@@ -25,13 +30,6 @@ function Table() {
     };
     getPlanet();
   }, [setData]);
-
-  function handleSearch({ target }) {
-    setFilters({
-      ...filters,
-      filterByName: { name: target.value.toLowerCase() },
-    });
-  }
 
   function inputFunc() {
     return (
@@ -47,20 +45,6 @@ function Table() {
     );
   }
 
-  function handleClick() {
-    setFilters({
-      ...filters,
-      filterByNumericValues: [
-        ...filters.filterByNumericValues,
-        {
-          column,
-          comparison,
-          value,
-        },
-      ],
-    });
-  }
-
   function optionsColumnFilter() {
     const options = ['population', 'orbital_period', 'diameter',
       'rotation_period', 'surface_water'];
@@ -70,6 +54,8 @@ function Table() {
         key={ index }
         id={ item }
         name="column"
+        // value="population"
+
       >
         {item}
       </option>
@@ -90,31 +76,60 @@ function Table() {
     )));
   }
 
+  const filterButton = (selections) => {
+    console.log(selections.comparison);
+    console.log(selections.column);
+    console.log(selections.value);
+    let filteredData = [];
+    if (selections.comparison === 'menor que') {
+      filteredData = data.filter((itens) => (
+        Number(itens[selections.column]) < Number(selections.value)));
+    }
+    if (selections.comparison === 'maior que') {
+      filteredData = data.filter((itens) => (
+        Number(itens[selections.column]) > Number(selections.value)));
+    }
+    if (selections.comparison === 'igual a') {
+      filteredData = data.filter((itens) => (
+        Number(itens[selections.column]) === Number(selections.value)));
+    }
+    setDataFilter(filteredData);
+    console.log(filteredData);
+    console.log(filters);
+  };
   function numericFilters() {
     return (
       <section className="numericFilters">
         <select
           data-testid="column-filter"
-          onChange={ (e) => setColumn(e.target.value) }
+          name="column"
+          onChange={ (event) => filtersControl(event) }
         >
           {optionsColumnFilter()}
         </select>
         <select
           data-testid="comparison-filter"
-          onChange={ (e) => setComparison(e.target.value) }
+          onChange={ (event) => filtersControl(event) }
+          name="comparison"
+
         >
           {optionComparisonFilter()}
         </select>
-        <input
-          type="number"
-          data-testid="value-filter"
-          name="value"
-          onChange={ (e) => setValue(e.target.value) }
-        />
+        <label htmlFor="number">
+          valor:
+          <input
+            data-testid="value-filter"
+            type="number"
+            name="value"
+            onChange={ (event) => filtersControl(event) }
+
+          />
+        </label>
         <button
           data-testid="button-filter"
           type="button"
-          onClick={ handleClick }
+          onClick={ () => filterButton(filters) }
+
         >
           Filtrar
 
@@ -125,9 +140,24 @@ function Table() {
   }
 
   function renderTable() {
-    if (data.length === 0) {
-      return data;
-    } return (
+    if (dataFilter.length !== 0) {
+      return (
+        <tbody>
+          {dataFilter.map((itemFilter, index) => (
+            <tr key={ index }>
+              {Object.values(itemFilter)
+                .map((planetFilter) => (
+                  // eslint-disable-next-line react/jsx-key
+                  <td>
+                    { planetFilter }
+                  </td>))}
+            </tr>
+          ))}
+        </tbody>
+
+      );
+    }
+    return (
       <tbody>
         {data.filter((namesOfPlanets) => namesOfPlanets
           .name.toLowerCase().includes(filters.filterByName.name))
@@ -135,12 +165,13 @@ function Table() {
             <tr key={ index }>
               {Object.values(items)
                 .map((planets) => (
-                  <td key={ value }>
+                  <td key={ planets }>
                     { planets }
                   </td>))}
             </tr>
           ))}
-      </tbody>);
+      </tbody>
+    );
   }
 
   return (
