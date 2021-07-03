@@ -1,6 +1,7 @@
 import React, { useEffect, useContext } from 'react';
 import PlanetContext from '../context/PlanetContext';
 import HeaderTable from './HeaderTable';
+// import FilterValues from './FilterValues';
 
 function Table() {
   const {

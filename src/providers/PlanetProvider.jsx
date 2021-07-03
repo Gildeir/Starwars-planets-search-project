@@ -16,6 +16,7 @@ const initialState = {
 function PlanetProvider({ children }) {
   const [data, setData] = useState([]);
   const [column, setColumn] = useState('');
+  const [newColumn, setNewColumn] = useState('');
   const [comparison, setComparison] = useState('');
   const [value, setValue] = useState('');
   const [filters, setFilters] = useState(initialState);
@@ -27,10 +28,13 @@ function PlanetProvider({ children }) {
     setFilters,
     column,
     setColumn,
+    newColumn,
+    setNewColumn,
     comparison,
     setComparison,
     value,
-    setValue };
+    setValue,
+  };
 
   return (
     <PlanetContext.Provider value={ context }>
